@@ -1,0 +1,87 @@
+enum Visibility {
+  PUBLIC
+  PRIVATE
+}
+
+model Post {
+  id          String      @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String      @db.ObjectId
+  user        User        @relation("UserPosts", fields: [userId], references: [id], onDelete: Cascade)
+  text        String?
+  image       String?
+  visibility  Visibility  @default(PUBLIC)
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  likes       PostLike[]
+  comments    Comment[]
+
+  @@map("posts")
+}
+
+model PostLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation("UserPostLikes", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([postId, userId])
+  @@map("post_likes")
+}
+
+model Comment {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  postId    String   @db.ObjectId
+  post      Post     @relation(fields: [postId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation("UserComments", fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  likes     CommentLike[]
+  replies   Reply[]
+
+  @@map("comments")
+}
+
+model CommentLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  commentId String   @db.ObjectId
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation("UserCommentLikes", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([commentId, userId])
+  @@map("comment_likes")
+}
+
+model Reply {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  commentId String   @db.ObjectId
+  comment   Comment  @relation(fields: [commentId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation("UserReplies", fields: [userId], references: [id], onDelete: Cascade)
+  text      String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  likes     ReplyLike[]
+
+  @@map("replies")
+}
+
+model ReplyLike {
+  id        String   @id @default(auto()) @map("_id") @db.ObjectId
+  replyId   String   @db.ObjectId
+  reply     Reply    @relation(fields: [replyId], references: [id], onDelete: Cascade)
+  userId    String   @db.ObjectId
+  user      User     @relation("UserReplyLikes", fields: [userId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
+
+  @@unique([replyId, userId])
+  @@map("reply_likes")
+}
